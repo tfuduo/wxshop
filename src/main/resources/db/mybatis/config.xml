@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+    <mappers>
+        <mapper resource="db/mybatis/mappers/UserMapper.xml"/>
+        <mapper resource="db/mybatis/mappers/GoodsMapper.xml"/>
+        <mapper resource="db/mybatis/mappers/OrderMapper.xml"/>
+        <mapper resource="db/mybatis/mappers/ShopMapper.xml"/>
+        <mapper resource="db/mybatis/mappers/ShoppingCartMapper.xml"/>
+    </mappers>
+</configuration>
