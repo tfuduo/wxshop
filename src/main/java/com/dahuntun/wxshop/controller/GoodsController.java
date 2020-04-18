@@ -1,14 +1,14 @@
 package com.dahuntun.wxshop.controller;
 
 
+import com.dahuntun.wxshop.entity.PageResponse;
+import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.generate.Goods;
 import com.dahuntun.wxshop.service.GoodsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
 @RestController
@@ -79,7 +79,12 @@ public class GoodsController {
      * @return 查询到的结果
      */
     // @formatter:on
-    public void getGoods() {
+    @GetMapping("/goods")
+    public @ResponseBody
+    PageResponse<Goods> getGoods(@RequestParam("pageNum") Integer pageNum,
+                                 @RequestParam("pageSize") Integer pageSize,
+                                 @RequestParam(value = "shopId", required = false) Integer shopId) {
+        return goodsService.getGoods(pageNum, pageSize, shopId);
     }
 
     // @formatter:off
@@ -140,9 +145,17 @@ public class GoodsController {
      */
     // @formatter:on
     @PostMapping("/goods")
-    public void createdGoods(@RequestBody Goods goods) {
+    public Response<Goods> createdGoods(@RequestBody Goods goods, HttpServletResponse response) {
         clean(goods);
-        goodsService.createGoods(goods);
+
+        response.setStatus(HttpServletResponse.SC_CREATED);
+        try {
+            return Response.of(goodsService.createGoods(goods));
+        } catch (GoodsService.NotAuthorizedForShopException e) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return Response.of(e.getMessage(), null);
+        }
+
     }
 
     private void clean(Goods goods) {
@@ -209,8 +222,8 @@ public class GoodsController {
      * @return 更新后的结果
      */
     // @formatter:on
-    public void updateGoods() {
-
+    public Response<Goods> updateGoods(Goods goods, HttpServletResponse response) {
+        return null;
     }
 
     // @formatter:off
@@ -259,7 +272,17 @@ public class GoodsController {
      * @return the deleted goods
      */
     // @formatter:on
-    public void deleteGoods() {
-
+    @DeleteMapping("/goods/{id}")
+    public Response<Goods> deleteGoods(@PathVariable("id") long goodsId, HttpServletResponse response) {
+        try {
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return Response.of(goodsService.deleteGoodsById(goodsId));
+        } catch (GoodsService.NotAuthorizedForShopException e) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return Response.of(e.getMessage(), null);
+        } catch (GoodsService.ResourceNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return Response.of(e.getMessage(), null);
+        }
     }
 }
