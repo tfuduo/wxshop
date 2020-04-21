@@ -3,9 +3,9 @@ package com.dahuntun.wxshop.service;
 import com.dahuntun.wxshop.WxshopApplication;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.generate.Goods;
+import com.dahuntun.wxshop.generate.Shop;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +13,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = WxshopApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -20,8 +22,28 @@ import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 public class GoodsIntegrationTest extends AbstractIntegrationTest{
     @Test
     public void testCreateGoods() throws JsonProcessingException {
-        String cookie = loginAndGetCookie();
+        UserLoginResponse userLoginResponse = loginAndGetCookie();
 
+        Shop shop = new Shop();
+        shop.setName("我的微店");
+        shop.setDescription("开张了！");
+        shop.setImgUrl("http://shopurl");
+
+        TestHttpResponse shopResponse = testHttpRequest(
+                "/api/shop",
+                "POST",
+                shop,
+                userLoginResponse.cookie);
+
+        Response<Shop> shopData = objectMapper.readValue(shopResponse.body,
+                new TypeReference<Response<Shop>>() {
+                });
+        assertEquals(SC_CREATED, shopResponse.code);
+        assertEquals("我的微店", shopData.getData().getName());
+        assertEquals("开张了！", shopData.getData().getDescription());
+        assertEquals("http://shopurl", shopData.getData().getImgUrl());
+        assertEquals("ok", shopData.getData().getStatus());
+        assertEquals(shopData.getData().getOwnerUserId(), userLoginResponse.user.getId());
         //{
         //    "name": "肥皂",
         //    "description": "纯天然无污染肥皂",
@@ -38,23 +60,30 @@ public class GoodsIntegrationTest extends AbstractIntegrationTest{
         goods.setImgUrl("https://img.url");
         goods.setPrice(500L);
         goods.setStock(10);
-        goods.setShopId(12345L);
+        goods.setShopId(shopData.getData().getId());
 
-        TestHttpResponse testHttpResponse = testHttpRequest(
+        TestHttpResponse goodsResponse = testHttpRequest(
                 "/api/goods",
-                false,
+                "POST",
                 goods,
-                cookie);
+                userLoginResponse.cookie);
 
-        Response<Goods> responseData = objectMapper.readValue(testHttpResponse.body,
+        Response<Goods> goodsData = objectMapper.readValue(goodsResponse.body,
                 new TypeReference<Response<Goods>>() {
         });
-        Assertions.assertEquals(SC_CREATED, testHttpResponse.code);
-        Assertions.assertEquals("肥皂", responseData.getData().getName());
+        assertEquals(SC_CREATED, goodsResponse.code);
+        assertEquals("肥皂", goodsData.getData().getName());
+        assertEquals(shopData.getData().getId(), goodsData.getData().getShopId());
+        assertEquals("ok", goodsData.getData().getStatus());
     }
 
     @Test
-    public void testDeleteGoods() {
-
+    public void return404IfGoodsNotExist() throws JsonProcessingException {
+        String cookie = loginAndGetCookie().cookie;
+        TestHttpResponse response = testHttpRequest("/api/goods/12345678",
+                "DELETE",
+                null,
+                cookie);
+        assertEquals(SC_NOT_FOUND, response.code);
     }
 }

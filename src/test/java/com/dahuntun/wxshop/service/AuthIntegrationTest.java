@@ -21,10 +21,10 @@ import static java.net.HttpURLConnection.*;
 public class AuthIntegrationTest extends AbstractIntegrationTest{
     @Test
     public void loginLogoutTest() throws JsonProcessingException {
-        String sessionId = loginAndGetCookie();
+        String sessionId = loginAndGetCookie().cookie;
 
         //带着Cookie访问/api/status 应该处于登录状态
-        String statusResponse = testHttpRequest("/api/status", true, null, sessionId).body;
+        String statusResponse = testHttpRequest("/api/status", "GET", null, sessionId).body;
 
         LoginResponse response = objectMapper.readValue(statusResponse, LoginResponse.class);
         Assertions.assertTrue(response.isLogin());
@@ -32,10 +32,10 @@ public class AuthIntegrationTest extends AbstractIntegrationTest{
 
         //调用/api/logout 登出
         //注意！登出也需要带Cookie
-        testHttpRequest("/api/logout", false, null, sessionId);
+        testHttpRequest("/api/logout", "POST", null, sessionId);
 
         //再次带着Cookie访问/api/status 恢复成未登录状态
-        statusResponse = testHttpRequest("/api/status", true, null, sessionId).body;
+        statusResponse = testHttpRequest("/api/status", "GET", null, sessionId).body;
 
         response = objectMapper.readValue(statusResponse, LoginResponse.class);
         Assertions.assertFalse(response.isLogin());

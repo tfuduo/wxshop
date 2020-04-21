@@ -1,10 +1,10 @@
 package com.dahuntun.wxshop.service;
 
 import com.dahuntun.wxshop.entity.DataStatus;
+import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.PageResponse;
 import com.dahuntun.wxshop.generate.*;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,9 +61,10 @@ class GoodsServiceTest {
     public void createGoodsFailedIfUserNotOwner() {
         when(shop.getOwnerUserId()).thenReturn(2L);
 
-        assertThrows(GoodsService.NotAuthorizedForShopException.class, () -> {
+        HttpException thrownException = assertThrows(HttpException.class, () -> {
             goodsService.createGoods(goods);
         });
+        assertEquals(HttpServletResponse.SC_FORBIDDEN, thrownException.getStatusCode());
     }
 
     @Test
@@ -71,9 +73,11 @@ class GoodsServiceTest {
         when(shop.getOwnerUserId()).thenReturn(1L);
 
         when(goodsMapper.selectByPrimaryKey(goodsToBeDeleted)).thenReturn(null);
-        assertThrows(GoodsService.ResourceNotFoundException.class, () -> {
+        HttpException thrownException = assertThrows(HttpException.class, () -> {
             goodsService.deleteGoodsById(goodsToBeDeleted);
         });
+
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, thrownException.getStatusCode());
     }
 
     @Test
@@ -90,9 +94,11 @@ class GoodsServiceTest {
     public void deleteGoodsThrowExceptionIfUserNotOwner() {
         long goodsToBeDeleted = 123L;
         when(shop.getOwnerUserId()).thenReturn(2L);
-        assertThrows(GoodsService.NotAuthorizedForShopException.class, () -> {
+        HttpException thrownException = assertThrows(HttpException.class, () -> {
            goodsService.deleteGoodsById(123L);
         });
+
+        assertEquals(HttpServletResponse.SC_FORBIDDEN, thrownException.getStatusCode());
     }
 
     @Test
@@ -135,9 +141,10 @@ class GoodsServiceTest {
         when(shop.getOwnerUserId()).thenReturn(1L);
 
         lenient().when(goodsMapper.selectByPrimaryKey(goodsToBeUpdated)).thenReturn(null);
-        assertThrows(GoodsService.ResourceNotFoundException.class, () -> {
+        HttpException thrownException = assertThrows(HttpException.class, () -> {
             goodsService.updateGoods(goods, 123L);
         });
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, thrownException.getStatusCode());
     }
 
     @Test
@@ -145,9 +152,10 @@ class GoodsServiceTest {
         long goodsToBeUpdated = 123L;
 
         when(shop.getOwnerUserId()).thenReturn(2L);
-        assertThrows(GoodsService.NotAuthorizedForShopException.class, () -> {
-            goodsService.updateGoods(goods,123L);
+        HttpException thrownException = assertThrows(HttpException.class, () -> {
+            goodsService.updateGoods(goods, 123L);
         });
+        assertEquals(HttpServletResponse.SC_FORBIDDEN, thrownException.getStatusCode());
     }
 
     @Test

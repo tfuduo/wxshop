@@ -12,15 +12,20 @@ public class Response<T> {
         return new Response<T>(null, data);
     }
 
-    public Response() {
+    private Response() {
     }
 
-    public Response(String message, T data) {
+    private Response(String message, T data) {
         this.message = message;
         this.data = data;
     }
 
     public T getData() {
         return data;
+    }
+
+    //巨坑无比 一定要有Getter
+    public String getMessage() {
+        return message;
     }
 }
