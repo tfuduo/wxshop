@@ -73,7 +73,7 @@ public class GoodsController {
      */
     /**
      *
-     * @param pageNum pageNum
+     * @param pageNum number of page
      * @param pageSize size of page
      * @param shopId shop id
      * @return 查询到的结果
