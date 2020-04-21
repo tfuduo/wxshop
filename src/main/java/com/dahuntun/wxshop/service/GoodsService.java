@@ -3,6 +3,7 @@ package com.dahuntun.wxshop.service;
 import com.dahuntun.wxshop.entity.DataStatus;
 import com.dahuntun.wxshop.entity.PageResponse;
 import com.dahuntun.wxshop.generate.*;
+import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,7 @@ public class GoodsService {
     }
 
     public Goods createGoods(Goods goods) {
-        Shop shop = shopMapper.selectByPrimaryKey(goods.getShopId());
+        Shop shop = getShop(goods);
 
         if (Objects.equals(shop.getOwnerUserId(), UserContext.getCurrentUser().getId())) {
             long goodsId = goodsMapper.insert(goods);
@@ -48,6 +49,22 @@ public class GoodsService {
         }
     }
 
+    public Goods updateGoods(Goods goods, long goodsId) {
+        Shop shop = getShop(goods);
+
+        if (Objects.equals(shop.getOwnerUserId(), UserContext.getCurrentUser().getId())) {
+            GoodsExample byId = new GoodsExample();
+            byId.createCriteria().andIdEqualTo(goodsId);
+            int affectedRows = goodsMapper.updateByExample(goods, byId);
+            if (affectedRows == 0) {
+                throw new ResourceNotFoundException("商品未找到");
+            }
+            return goods;
+        } else {
+            throw new NotAuthorizedForShopException("无权访问！");
+        }
+    }
+
     public PageResponse<Goods> getGoods(Integer pageNum, Integer pageSize, Integer shopId) {
         //找出总数
         int totalNumber = countAll(shopId);
@@ -58,6 +75,9 @@ public class GoodsService {
         return PageResponse.pageData(pageNum, pageSize, totalPage, pageGoods);
     }
 
+    private Shop getShop(Goods goods) {
+        return shopMapper.selectByPrimaryKey(goods.getShopId());
+    }
     private int countAll(Integer shopId) {
         GoodsExample goodsExample = new GoodsExample();
         if (shopId == null) {

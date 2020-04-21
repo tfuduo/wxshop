@@ -182,7 +182,8 @@ public class GoodsController {
      *              "details": "这是一块好肥皂",
      *              "imgUrl": "https://img.url",
      *              "price": 500,
-     *              "stock": 10
+     *              "stock": 10,
+     *              "updatedAt": "2020-03-23T13:22:03Z"
      *          }
      *
      *
@@ -200,7 +201,7 @@ public class GoodsController {
      *              "price": 500,
      *              "stock": 10,
      *              "createdAt": "2020-03-22T13:22:03Z",
-     *              "updatedAt": "2020-03-22T13:22:03Z"
+     *              "updatedAt": "2020-03-23T13:22:03Z"
      *       }
      *     }
      *
@@ -217,13 +218,26 @@ public class GoodsController {
      */
     /**
      *
-     * @param goods
-     * @param response
+     * @param goodsId updated goods's id
+     * @param goods goods to be update
+     * @param response the HTTP response
      * @return 更新后的结果
      */
     // @formatter:on
-    public Response<Goods> updateGoods(Goods goods, HttpServletResponse response) {
-        return null;
+    @PatchMapping("/goods/{id}")
+    public Response<Goods> updateGoods(@PathVariable("id") long goodsId,
+                                       @RequestBody Goods goods,
+                                       HttpServletResponse response) {
+        try {
+            response.setStatus(HttpServletResponse.SC_OK);
+            return Response.of(goodsService.updateGoods(goods, goodsId));
+        } catch (GoodsService.NotAuthorizedForShopException e) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return Response.of(e.getMessage(), null);
+        } catch (GoodsService.ResourceNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return Response.of(e.getMessage(), null);
+        }
     }
 
     // @formatter:off
