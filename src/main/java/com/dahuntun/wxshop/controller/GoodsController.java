@@ -73,9 +73,9 @@ public class GoodsController {
      */
     /**
      *
-     * @param pageNum
-     * @param pageSize
-     * @param shopId
+     * @param pageNum pageNum
+     * @param pageSize size of page
+     * @param shopId shop id
      * @return 查询到的结果
      */
     // @formatter:on
