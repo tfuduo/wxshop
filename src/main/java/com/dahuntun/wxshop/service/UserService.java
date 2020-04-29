@@ -2,8 +2,8 @@ package com.dahuntun.wxshop.service;
 
 import com.dahuntun.wxshop.dao.UserDAO;
 import com.dahuntun.wxshop.generate.User;
-import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -25,7 +25,7 @@ public class UserService {
         user.setUpdatedAt(new Date());
         try {
             userDAO.insertUser(user);
-        } catch (PersistenceException e) {
+        } catch (DuplicateKeyException e) {
             return userDAO.getUserByTel(tel);
         }
         return user;

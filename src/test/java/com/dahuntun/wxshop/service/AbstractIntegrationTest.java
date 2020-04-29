@@ -3,6 +3,7 @@ package com.dahuntun.wxshop.service;
 import com.dahuntun.wxshop.entity.LoginResponse;
 import com.dahuntun.wxshop.generate.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kevinsawicki.http.HttpRequest;
 import org.flywaydb.core.Flyway;
@@ -42,7 +43,7 @@ public class AbstractIntegrationTest {
         flyway.migrate();
     }
 
-    public ObjectMapper objectMapper = new ObjectMapper();
+    public static ObjectMapper objectMapper = new ObjectMapper();
 
     public String getUrl(String apiName) {
         // 获取集成测试的端口号
@@ -105,6 +106,10 @@ public class AbstractIntegrationTest {
             this.code = code;
             this.body = body;
             this.headers = headers;
+        }
+
+        public <T> T asJsonObject(TypeReference<T> typeReference) throws JsonProcessingException {
+            return objectMapper.readValue(body, typeReference);
         }
     }
 
