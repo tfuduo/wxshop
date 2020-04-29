@@ -1,5 +1,6 @@
 package com.dahuntun.wxshop.controller;
 
+import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.PageResponse;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.entity.ShoppingCartData;
@@ -171,7 +172,11 @@ public class ShoppingCartController {
     // @formatter:on
     @PostMapping("/shoppingCart")
     public Response<ShoppingCartData> addToShoppingCart(@RequestBody AddToShoppingCartRequest request) {
-        return null;
+        try {
+            return Response.of(shoppingCartService.addToShoppingCart(request, UserContext.getCurrentUser().getId()));
+        } catch (HttpException e) {
+            return Response.of(e.getMessage(), null);
+        }
     }
 
     public static class AddToShoppingCartRequest {

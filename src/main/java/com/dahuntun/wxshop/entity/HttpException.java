@@ -14,6 +14,10 @@ public class HttpException extends RuntimeException {
         return new HttpException(HttpServletResponse.SC_NOT_FOUND, message);
     }
 
+    public static HttpException badRequest(String message) {
+        return new HttpException(HttpServletResponse.SC_BAD_REQUEST, message);
+    }
+
     private HttpException(int statusCode, String message) {
         super(message);
         this.statusCode = statusCode;
