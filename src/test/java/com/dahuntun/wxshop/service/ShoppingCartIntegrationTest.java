@@ -2,10 +2,7 @@ package com.dahuntun.wxshop.service;
 
 import com.dahuntun.wxshop.WxshopApplication;
 import com.dahuntun.wxshop.controller.ShoppingCartController;
-import com.dahuntun.wxshop.entity.PageResponse;
-import com.dahuntun.wxshop.entity.Response;
-import com.dahuntun.wxshop.entity.ShoppingCartData;
-import com.dahuntun.wxshop.entity.ShoppingCartGoods;
+import com.dahuntun.wxshop.entity.*;
 import com.dahuntun.wxshop.generate.Goods;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -73,5 +70,23 @@ public class ShoppingCartIntegrationTest extends AbstractIntegrationTest{
         Assertions.assertTrue(response.getData().getGoods().stream().allMatch(
                 goods -> goods.getShopId() == 1L
         ));
+    }
+
+    @Test
+    public void canDeleteShoppingCartData() throws Exception {
+        UserLoginResponse loginResponse = loginAndGetCookie();
+
+        Response<ShoppingCartData> response = testHttpRequest("/api/shoppingCart/5",
+                "DELETE", null, loginResponse.cookie).asJsonObject(new TypeReference<Response<ShoppingCartData>>() {
+        });
+
+        Assertions.assertEquals(2L, response.getData().getShop().getId());
+
+        Assertions.assertEquals(1, response.getData().getGoods().size());
+        ShoppingCartGoods goods = response.getData().getGoods().get(0);
+
+        Assertions.assertEquals(4L, goods.getId());
+        Assertions.assertEquals(200, goods.getNumber());
+        Assertions.assertEquals(DataStatus.OK.toString().toLowerCase(), goods.getStatus());
     }
 }

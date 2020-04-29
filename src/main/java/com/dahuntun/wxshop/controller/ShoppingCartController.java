@@ -265,8 +265,19 @@ public class ShoppingCartController {
      *       "message": "Unauthorized"
      *     }
      */
+    /**
+     *
+     * @param goodsId 要删除的商品id
+     * @return 更新后的该店铺数据
+     */
     // @formatter:on
-    public void deleteShoppingCart() {
+    @DeleteMapping("/shoppingCart/{id}")
+    public Response<ShoppingCartData> deleteGoodsInShoppingCart(@PathVariable("id") Long goodsId) {
+        try {
+            return Response.of(shoppingCartService.deleteGoodsInShoppingCart(goodsId, UserContext.getCurrentUser().getId()));
+        } catch (HttpException e) {
+            return Response.of(e.getMessage(), null);
+        }
     }
 
 

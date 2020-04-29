@@ -121,4 +121,13 @@ public class ShoppingCartService {
         result.setUpdatedAt(new Date());
         return result;
     }
+
+    public ShoppingCartData deleteGoodsInShoppingCart(long goodsId, long userId) {
+        Goods goods = goodsMapper.selectByPrimaryKey(goodsId);
+        if (goods == null) {
+            throw HttpException.notFound("商品未找到：" + goodsId);
+        }
+        shoppingCartQueryMapper.deleteShoppingCart(goodsId, userId);
+        return getLatestShoppingCartDataByUserIdShopId(goods.getShopId(), userId);
+    }
 }
