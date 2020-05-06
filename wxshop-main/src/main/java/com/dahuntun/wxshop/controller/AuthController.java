@@ -1,10 +1,12 @@
 package com.dahuntun.wxshop.controller;
 
+import com.dahuntun.api.rpc.OrderService;
 import com.dahuntun.wxshop.entity.LoginResponse;
 import com.dahuntun.wxshop.generate.User;
 import com.dahuntun.wxshop.service.AuthService;
 import com.dahuntun.wxshop.service.TelVerificationService;
 import com.dahuntun.wxshop.service.UserContext;
+import org.apache.dubbo.config.annotation.Reference;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +51,12 @@ public class AuthController {
         SecurityUtils.getSubject().logout();
     }
 
+    @Reference(version = "${wxshop.orderservice.version}")
+    private OrderService orderService;
+
     @GetMapping("/status")
     public Object loginStatus() {
+        System.out.println(orderService.sayHello("aa"));
         User currentUser = UserContext.getCurrentUser();
         if (currentUser == null) {
             return LoginResponse.notLogin();

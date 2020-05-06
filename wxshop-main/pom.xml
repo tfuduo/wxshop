@@ -14,6 +14,11 @@
 	<description>wxshop-main</description>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.dahuntun</groupId>
+			<artifactId>wxshop-api</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<!-- Dubbo dependencies -->
 		<dependency>
 			<groupId>org.apache.dubbo</groupId>
