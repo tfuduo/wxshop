@@ -1,6 +1,6 @@
 package com.dahuntun.wxshop.service;
 
-import com.dahuntun.wxshop.entity.DataStatus;
+import com.dahuntun.api.DataStatus;
 import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.PageResponse;
 import com.dahuntun.wxshop.generate.Shop;

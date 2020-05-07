@@ -1,13 +1,21 @@
 spring:
   application:
     name: wxshop-order
+  datasource:
+    url: jdbc:mysql://localhost:3306/wxorder?useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driverClassName: com.mysql.cj.jdbc.Driver
 
 wxshop:
-  orderservice:
+  rpcorderservice:
     version: 0.0.1
 
 server:
   port: 8081
+
+mybatis:
+  config-location: classpath:/db/mybatis/config.xml
 
 dubbo:
   registry:

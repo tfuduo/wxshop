@@ -1,6 +1,6 @@
 package com.dahuntun.wxshop.service;
 
-import com.dahuntun.wxshop.entity.DataStatus;
+import com.dahuntun.api.DataStatus;
 import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.PageResponse;
 import com.dahuntun.wxshop.generate.*;
@@ -8,7 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 @Service
 public class GoodsService {
@@ -64,6 +68,14 @@ public class GoodsService {
         } else {
             throw HttpException.forbidden("无权访问！");
         }
+    }
+
+    public Map<Long, Goods> getIdToGoodsMap(List<Long> goodsId) {
+        GoodsExample example = new GoodsExample();
+        example.createCriteria().andIdIn(goodsId);
+        List<Goods> goods = goodsMapper.selectByExample(example);
+
+        return goods.stream().collect(toMap(Goods::getId, x -> x));
     }
 
     public PageResponse<Goods> getGoods(Integer pageNum, Integer pageSize, Integer shopId) {

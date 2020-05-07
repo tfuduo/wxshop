@@ -1,9 +1,16 @@
 package com.dahuntun.wxshop.service;
 
+import com.dahuntun.api.DataStatus;
 import com.dahuntun.wxshop.controller.ShoppingCartController;
 import com.dahuntun.wxshop.dao.ShoppingCartQueryMapper;
-import com.dahuntun.wxshop.entity.*;
-import com.dahuntun.wxshop.generate.*;
+import com.dahuntun.wxshop.entity.HttpException;
+import com.dahuntun.wxshop.entity.PageResponse;
+import com.dahuntun.wxshop.entity.ShoppingCartData;
+import com.dahuntun.wxshop.entity.ShoppingCartGoods;
+import com.dahuntun.wxshop.generate.Goods;
+import com.dahuntun.wxshop.generate.GoodsMapper;
+import com.dahuntun.wxshop.generate.ShoppingCart;
+import com.dahuntun.wxshop.generate.ShoppingCartMapper;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -11,26 +18,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import javax.inject.Inject;
+import java.util.*;
 
 import static java.util.stream.Collectors.*;
 
 @Service
 public class ShoppingCartService {
-    private static Logger logger = LoggerFactory.getLogger(ShoppingCartService.class);
-    private ShoppingCartQueryMapper shoppingCartQueryMapper;
-    private GoodsMapper goodsMapper;
-    private SqlSessionFactory sqlSessionFactory;
+    private static final Logger logger = LoggerFactory.getLogger(ShoppingCartService.class);
+    private final ShoppingCartQueryMapper shoppingCartQueryMapper;
+    private final GoodsMapper goodsMapper;
+    private final SqlSessionFactory sqlSessionFactory;
+    private final GoodsService goodsService;
 
+    @Inject
     public ShoppingCartService(ShoppingCartQueryMapper shoppingCartQueryMapper,
                                GoodsMapper goodsMapper,
-                               SqlSessionFactory sqlSessionFactory) {
+                               SqlSessionFactory sqlSessionFactory,
+                               GoodsService goodsService) {
         this.shoppingCartQueryMapper = shoppingCartQueryMapper;
         this.goodsMapper = goodsMapper;
         this.sqlSessionFactory = sqlSessionFactory;
+        this.goodsService = goodsService;
     }
 
     public PageResponse<ShoppingCartData> getShoppingCartOfUser(Long userId, int pageNum, int pageSize) {
@@ -52,6 +61,7 @@ public class ShoppingCartService {
 
         return PageResponse.pageData(pageNum, pageSize, totalPage, pagedData);
     }
+
     private ShoppingCartData merge(List<ShoppingCartData> goodsOfSameShop) {
         ShoppingCartData result = new ShoppingCartData();
         result.setShop(goodsOfSameShop.get(0).getShop());
@@ -69,19 +79,17 @@ public class ShoppingCartService {
                 .stream()
                 .map(ShoppingCartController.AddToShoppingCartItem::getId)
                 .collect(toList());
+
         if (goodsId.isEmpty()) {
             throw HttpException.badRequest("商品ID为空！");
         }
-        GoodsExample example = new GoodsExample();
-        example.createCriteria().andIdIn(goodsId);
-        List<Goods> goods = goodsMapper.selectByExample(example);
 
-        if (goods.stream().map(Goods::getShopId).collect(toSet()).size() != 1) {
-            logger.debug("非法请求：{}, {}", goodsId, goods);
+        Map<Long, Goods> idToGoodsMap = goodsService.getIdToGoodsMap(goodsId);
+
+        if (idToGoodsMap.values().stream().map(Goods::getShopId).collect(toSet()).size() != 1) {
+            logger.debug("非法请求：{}, {}", goodsId, idToGoodsMap.values());
             throw HttpException.badRequest("商品ID非法！");
         }
-
-        Map<Long, Goods> idToGoodsMap = goods.stream().collect(toMap(Goods::getId, x -> x));
 
         List<ShoppingCart> shoppingCartRows = request.getGoods()
                 .stream()
@@ -95,7 +103,7 @@ public class ShoppingCartService {
             sqlSession.commit();
         }
 
-        return getLatestShoppingCartDataByUserIdShopId(goods.get(0).getShopId(), userId);
+        return getLatestShoppingCartDataByUserIdShopId(new ArrayList<>(idToGoodsMap.values()).get(0).getShopId(), userId);
     }
 
     private ShoppingCartData getLatestShoppingCartDataByUserIdShopId(long shopId, long userId) {

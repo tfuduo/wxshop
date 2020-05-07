@@ -12,4 +12,18 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>wxshop-api</name>
     <description>wxshop-api</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.19</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
 </project>

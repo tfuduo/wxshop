@@ -75,7 +75,7 @@ public class ShopController {
     // @formatter:on
     @GetMapping("/shop")
     public PageResponse<Shop> getShop(@RequestParam("pageNum") Integer pageNum,
-                                            @RequestParam("pageSize") Integer pageSize) {
+                                      @RequestParam("pageSize") Integer pageSize) {
         return shopService.getShopByUserId(pageNum, pageSize, UserContext.getCurrentUser().getId());
     }
 
