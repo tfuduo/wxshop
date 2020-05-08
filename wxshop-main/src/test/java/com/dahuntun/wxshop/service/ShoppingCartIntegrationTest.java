@@ -4,6 +4,7 @@ import com.dahuntun.api.DataStatus;
 import com.dahuntun.wxshop.WxshopApplication;
 import com.dahuntun.wxshop.controller.ShoppingCartController;
 import com.dahuntun.wxshop.entity.*;
+import com.dahuntun.wxshop.generate.Goods;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Sets;

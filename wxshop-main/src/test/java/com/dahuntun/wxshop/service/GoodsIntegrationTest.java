@@ -2,6 +2,8 @@ package com.dahuntun.wxshop.service;
 
 import com.dahuntun.wxshop.WxshopApplication;
 import com.dahuntun.wxshop.entity.Response;
+import com.dahuntun.wxshop.generate.Goods;
+import com.dahuntun.wxshop.generate.Shop;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;

@@ -12,5 +12,7 @@
     </typeAliases>
     <mappers>
         <mapper resource="db/mybatis/mappers/MyOrderMapper.xml"/>
+        <mapper resource="db/mybatis/mappers/OrderGoodsMapper.xml"/>
+        <mapper resource="db/mybatis/mappers/OrderMapper.xml"/>
     </mappers>
 </configuration>

@@ -1,17 +1,25 @@
 package com.dahuntun.wxshop.controller;
 
 import com.dahuntun.api.data.OrderInfo;
+import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.OrderResponse;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.service.OrderService;
 import com.dahuntun.wxshop.service.UserContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api")
 public class OrderController {
     private OrderService orderService;
 
+    @Autowired
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     // @formatter:off
     /**
@@ -87,13 +95,6 @@ public class OrderController {
      */
     // @formatter:on
 
-    /**
-     * 获取订单
-     * @param pageNum
-     * @param pageSize
-     * @param status
-     * @return 分页的订单
-     */
     @GetMapping("/order")
     public void getOrder() {
 
@@ -174,11 +175,17 @@ public class OrderController {
 
     /**
      * @param orderInfo 订单信息
+     * @param response 响应
      * @return 响应
      */
     @PostMapping("/order")
-    public Response<OrderResponse> createOrder(@RequestBody OrderInfo orderInfo) {
-        return Response.of(orderService.createOrder(orderInfo, UserContext.getCurrentUser().getId()));
+    public Response<OrderResponse> createOrder(@RequestBody OrderInfo orderInfo, HttpServletResponse response) {
+        try {
+            return Response.of(orderService.createOrder(orderInfo, UserContext.getCurrentUser().getId()));
+        } catch (HttpException e) {
+            response.setStatus(e.getStatusCode());
+            return Response.of(e.getMessage(), null);
+        }
     }
 
     // @formatter:off
@@ -256,12 +263,7 @@ public class OrderController {
      */
     // @formatter:on
 
-    /**
-     * 更新订单
-     * @param id
-     * @param order
-     * @return 更新后的订单
-     */
+
     @RequestMapping(value = "/order/{id}", method = {RequestMethod.POST, RequestMethod.PATCH})
     public void updateOrder() {
     }
@@ -327,11 +329,6 @@ public class OrderController {
      */
     // @formatter:on
 
-    /**
-     * 删除订单
-     * @param orderId
-     * @return 删除后的订单
-     */
     @DeleteMapping("/order/{id}")
     public void deleteOrder() {
 
