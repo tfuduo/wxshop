@@ -3,13 +3,16 @@ package com.dahuntun.wxshop.service;
 import com.dahuntun.api.DataStatus;
 import com.dahuntun.api.data.GoodsInfo;
 import com.dahuntun.api.data.OrderInfo;
+import com.dahuntun.api.data.RpcOrderGoods;
 import com.dahuntun.api.generate.Order;
 import com.dahuntun.api.rpc.RpcOrderService;
 import com.dahuntun.wxshop.dao.GoodsStockMapper;
 import com.dahuntun.wxshop.entity.GoodsWithNumber;
 import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.OrderResponse;
+import com.dahuntun.api.data.PageResponse;
 import com.dahuntun.wxshop.generate.Goods;
+import com.dahuntun.wxshop.generate.Shop;
 import com.dahuntun.wxshop.generate.ShopMapper;
 import com.dahuntun.wxshop.generate.UserMapper;
 import org.apache.dubbo.config.annotation.Reference;
@@ -57,28 +60,28 @@ public class OrderService {
 
     public OrderResponse createOrder(OrderInfo orderInfo, Long userId) {
         //获取goodsId到商品的映射
-        Map<Long, Goods> idToGoodsMap = getIdToGoodsMap(orderInfo);
+        Map<Long, Goods> idToGoodsMap = getIdToGoodsMap(orderInfo.getGoods());
 
         //创建订单
         Order createdOrder = crateOrderViaRpc(orderInfo, userId, idToGoodsMap);
 
         //返回响应
-        return generateResponse(orderInfo, idToGoodsMap, createdOrder);
+        return generateResponse(orderInfo.getGoods(), idToGoodsMap, createdOrder);
     }
 
-    private OrderResponse generateResponse(OrderInfo orderInfo, Map<Long, Goods> idToGoodsMap, Order createdOrder) {
+    private OrderResponse generateResponse(List<GoodsInfo> goodsInfo, Map<Long, Goods> idToGoodsMap, Order createdOrder) {
         OrderResponse orderResponse = new OrderResponse(createdOrder);
         Long shopId = new ArrayList<>(idToGoodsMap.values()).get(0).getShopId();
         orderResponse.setShop(shopMapper.selectByPrimaryKey(shopId));
-        orderResponse.setGoods(orderInfo.getGoods()
+        orderResponse.setGoods(goodsInfo
                 .stream()
                 .map(goods -> toGoodsWithNumber(goods, idToGoodsMap))
                 .collect(Collectors.toList()));
         return orderResponse;
     }
 
-    private Map<Long, Goods> getIdToGoodsMap(OrderInfo orderInfo) {
-        List<Long> goodsId = orderInfo.getGoods()
+    private Map<Long, Goods> getIdToGoodsMap(List<GoodsInfo> goodsInfo) {
+        List<Long> goodsId = goodsInfo
                 .stream()
                 .map(GoodsInfo::getId)
                 .collect(Collectors.toList());
@@ -125,5 +128,78 @@ public class OrderService {
             result += goods.getPrice()*goodsInfo.getNumber();
         }
         return result;
+    }
+
+    public OrderResponse deleteOrder(long orderId, long userId) {
+        RpcOrderGoods rpcOrderGoods = rpcOrderService.deleteOrder(orderId, userId);
+
+        Map<Long, Goods> idToGoodsMap = getIdToGoodsMap(rpcOrderGoods.getGoods());
+
+        return generateResponse(rpcOrderGoods.getGoods(), idToGoodsMap, rpcOrderGoods.getOrder());
+    }
+
+    public PageResponse<OrderResponse> getOrder(Long userId, Integer pageNum, Integer pageSize, DataStatus dataStatus) {
+        PageResponse<RpcOrderGoods> rpcOrderGoods = rpcOrderService.getOrder(userId, pageNum, pageSize, dataStatus);
+
+        List<GoodsInfo> goodsId = rpcOrderGoods.getData()
+                .stream()
+                .map(RpcOrderGoods::getGoods)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        Map<Long, Goods> idToGoodsMap = getIdToGoodsMap(goodsId);
+
+        List<OrderResponse> orders = rpcOrderGoods.getData()
+                .stream()
+                .map(order -> generateResponse(order.getGoods(), idToGoodsMap, order.getOrder()))
+                .collect(Collectors.toList());
+
+        return  PageResponse.pageData(
+                rpcOrderGoods.getPageNum(),
+                rpcOrderGoods.getPageSize(),
+                rpcOrderGoods.getTotalPage(),
+                orders
+        );
+    }
+
+    public OrderResponse updateExpressInformation(Order order, Long userId) {
+        doGetOrderById(userId, order.getId());
+
+        Order copy = new Order();
+        copy.setId(order.getId());
+        copy.setExpressId(order.getExpressId());
+        copy.setExpressCompany(order.getExpressCompany());
+        return toOrderResponse(rpcOrderService.updateOrder(copy));
+    }
+
+    public RpcOrderGoods doGetOrderById(long userId, long orderId) {
+        RpcOrderGoods orderInDatabase = rpcOrderService.getOrderById(orderId);
+        if (orderInDatabase == null) {
+            throw HttpException.notFound("订单未找到: " + orderId);
+        }
+
+        Shop shop = shopMapper.selectByPrimaryKey(orderInDatabase.getOrder().getShopId());
+        if (shop == null) {
+            throw HttpException.notFound("店铺未找到: " + orderInDatabase.getOrder().getShopId());
+        }
+
+        if (shop.getOwnerUserId() != userId && orderInDatabase.getOrder().getUserId() != userId) {
+            throw HttpException.forbidden("无权访问！");
+        }
+        return orderInDatabase;
+    }
+
+    private OrderResponse toOrderResponse(RpcOrderGoods rpcOrderGoods) {
+        Map<Long, Goods> idToGoodsMap = getIdToGoodsMap(rpcOrderGoods.getGoods());
+        return generateResponse(rpcOrderGoods.getGoods(), idToGoodsMap, rpcOrderGoods.getOrder());
+    }
+
+    public OrderResponse updateOrderStatus(Order order, long userId) {
+        doGetOrderById(userId, order.getId());
+
+        Order copy = new Order();
+        copy.setId(order.getId());
+        copy.setStatus(order.getStatus());
+        return toOrderResponse(rpcOrderService.updateOrder(copy));
     }
 }

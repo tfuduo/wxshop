@@ -4,7 +4,7 @@ import com.dahuntun.api.DataStatus;
 import com.dahuntun.wxshop.controller.ShoppingCartController;
 import com.dahuntun.wxshop.dao.ShoppingCartQueryMapper;
 import com.dahuntun.wxshop.entity.HttpException;
-import com.dahuntun.wxshop.entity.PageResponse;
+import com.dahuntun.api.data.PageResponse;
 import com.dahuntun.wxshop.entity.ShoppingCartData;
 import com.dahuntun.wxshop.entity.ShoppingCartGoods;
 import com.dahuntun.wxshop.generate.Goods;

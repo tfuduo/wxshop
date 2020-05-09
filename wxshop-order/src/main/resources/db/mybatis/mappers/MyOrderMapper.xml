@@ -9,4 +9,10 @@
             (#{item.id}, #{orderId}, #{item.number})
         </foreach>
     </insert>
+    <select id="getGoodsInfoOfOrder" parameterType="long" resultType="GoodsInfo">
+        SELECT GOODS_ID as id,
+               NUMBER   as number
+        FROM ORDER_GOODS
+        WHERE ORDER_ID = #{id}
+    </select>
 </mapper>

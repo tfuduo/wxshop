@@ -1,6 +1,6 @@
 package com.dahuntun.wxshop.controller;
 
-import com.dahuntun.wxshop.entity.PageResponse;
+import com.dahuntun.api.data.PageResponse;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.generate.Shop;
 import com.dahuntun.wxshop.service.ShopService;

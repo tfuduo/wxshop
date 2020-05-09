@@ -2,7 +2,7 @@ package com.dahuntun.wxshop.service;
 
 import com.dahuntun.api.DataStatus;
 import com.dahuntun.wxshop.entity.HttpException;
-import com.dahuntun.wxshop.entity.PageResponse;
+import com.dahuntun.api.data.PageResponse;
 import com.dahuntun.wxshop.generate.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

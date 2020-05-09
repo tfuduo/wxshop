@@ -1,7 +1,11 @@
 package com.dahuntun.wxshop.controller;
 
+import com.dahuntun.api.DataStatus;
 import com.dahuntun.api.data.OrderInfo;
+import com.dahuntun.api.generate.Order;
+import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.OrderResponse;
+import com.dahuntun.api.data.PageResponse;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.service.OrderService;
 import com.dahuntun.wxshop.service.UserContext;
@@ -92,9 +96,22 @@ public class OrderController {
      */
     // @formatter:on
 
+    /**
+     *
+     * @param pageNum 页数
+     * @param pageSize 每页大小
+     * @param status 订单状态
+     * @return 响应
+     */
     @GetMapping("/order")
-    public void getOrder() {
+    public PageResponse<OrderResponse> getOrder(@RequestParam("pageNum") Integer pageNum,
+                                                @RequestParam("pageSize") Integer pageSize,
+                                                @RequestParam(value = "status", required = false) String status) {
+        if (status != null && DataStatus.fromStatus(status) == null) {
+            throw HttpException.badRequest("非法status: " + status);
+        }
 
+        return orderService.getOrder(UserContext.getCurrentUser().getId(), pageNum, pageSize, DataStatus.fromStatus(status));
     }
 
 
@@ -255,9 +272,20 @@ public class OrderController {
      */
     // @formatter:on
 
-
+    /**
+     *
+     * @param id 订单id
+     * @param order 更新的订单
+     * @return 响应
+     */
     @RequestMapping(value = "/order/{id}", method = {RequestMethod.POST, RequestMethod.PATCH})
-    public void updateOrder() {
+    public Response<OrderResponse> updateOrder(@PathVariable("id") long id, @RequestBody Order order) {
+        order.setId(id);
+        if (order.getExpressCompany() != null) {
+            return Response.of(orderService.updateExpressInformation(order, UserContext.getCurrentUser().getId()));
+        } else {
+            return Response.of(orderService.updateOrderStatus(order, UserContext.getCurrentUser().getId()));
+        }
     }
 
     // @formatter:off
@@ -321,8 +349,13 @@ public class OrderController {
      */
     // @formatter:on
 
+    /**
+     *
+     * @param orderId 订单id
+     * @return 删除订单的响应
+     */
     @DeleteMapping("/order/{id}")
-    public void deleteOrder() {
-
+    public Response<OrderResponse> deleteOrder(@PathVariable("id") long orderId) {
+        return Response.of(orderService.deleteOrder(orderId, UserContext.getCurrentUser().getId()));
     }
 }
