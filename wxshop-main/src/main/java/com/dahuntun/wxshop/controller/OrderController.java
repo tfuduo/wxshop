@@ -1,15 +1,12 @@
 package com.dahuntun.wxshop.controller;
 
 import com.dahuntun.api.data.OrderInfo;
-import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.OrderResponse;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.service.OrderService;
 import com.dahuntun.wxshop.service.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api")
@@ -175,18 +172,12 @@ public class OrderController {
 
     /**
      * @param orderInfo 订单信息
-     * @param response 响应
      * @return 响应
      */
     @PostMapping("/order")
-    public Response<OrderResponse> createOrder(@RequestBody OrderInfo orderInfo, HttpServletResponse response) {
-        try {
-            orderService.deductStock(orderInfo);
-            return Response.of(orderService.createOrder(orderInfo, UserContext.getCurrentUser().getId()));
-        } catch (HttpException e) {
-            response.setStatus(e.getStatusCode());
-            return Response.of(e.getMessage(), null);
-        }
+    public Response<OrderResponse> createOrder(@RequestBody OrderInfo orderInfo) {
+        orderService.deductStock(orderInfo);
+        return Response.of(orderService.createOrder(orderInfo, UserContext.getCurrentUser().getId()));
     }
 
     // @formatter:off

@@ -1,6 +1,5 @@
 package com.dahuntun.wxshop.controller;
 
-import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.PageResponse;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.entity.ShoppingCartData;
@@ -172,11 +171,7 @@ public class ShoppingCartController {
     // @formatter:on
     @PostMapping("/shoppingCart")
     public Response<ShoppingCartData> addToShoppingCart(@RequestBody AddToShoppingCartRequest request) {
-        try {
-            return Response.of(shoppingCartService.addToShoppingCart(request, UserContext.getCurrentUser().getId()));
-        } catch (HttpException e) {
-            return Response.of(e.getMessage(), null);
-        }
+        return Response.of(shoppingCartService.addToShoppingCart(request, UserContext.getCurrentUser().getId()));
     }
 
     public static class AddToShoppingCartRequest {
@@ -273,11 +268,7 @@ public class ShoppingCartController {
     // @formatter:on
     @DeleteMapping("/shoppingCart/{id}")
     public Response<ShoppingCartData> deleteGoodsInShoppingCart(@PathVariable("id") Long goodsId) {
-        try {
-            return Response.of(shoppingCartService.deleteGoodsInShoppingCart(goodsId, UserContext.getCurrentUser().getId()));
-        } catch (HttpException e) {
-            return Response.of(e.getMessage(), null);
-        }
+        return Response.of(shoppingCartService.deleteGoodsInShoppingCart(goodsId, UserContext.getCurrentUser().getId()));
     }
 
 

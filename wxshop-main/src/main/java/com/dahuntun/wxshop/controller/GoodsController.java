@@ -1,7 +1,6 @@
 package com.dahuntun.wxshop.controller;
 
 
-import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.PageResponse;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.generate.Goods;
@@ -150,13 +149,7 @@ public class GoodsController {
         clean(goods);
 
         response.setStatus(HttpServletResponse.SC_CREATED);
-        try {
-            return Response.of(goodsService.createGoods(goods));
-        } catch (HttpException e) {
-            response.setStatus(e.getStatusCode());
-            return Response.of(e.getMessage(), null);
-        }
-
+        return Response.of(goodsService.createGoods(goods));
     }
 
     private void clean(Goods goods) {
@@ -229,13 +222,8 @@ public class GoodsController {
     public Response<Goods> updateGoods(@PathVariable("id") long goodsId,
                                        @RequestBody Goods goods,
                                        HttpServletResponse response) {
-        try {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return Response.of(goodsService.updateGoods(goods, goodsId));
-        } catch (HttpException e) {
-            response.setStatus(e.getStatusCode());
-            return Response.of(e.getMessage(), null);
-        }
+        response.setStatus(HttpServletResponse.SC_OK);
+        return Response.of(goodsService.updateGoods(goods, goodsId));
     }
 
     // @formatter:off
@@ -286,12 +274,7 @@ public class GoodsController {
     // @formatter:on
     @DeleteMapping("/goods/{id}")
     public Response<Goods> deleteGoods(@PathVariable("id") long goodsId, HttpServletResponse response) {
-        try {
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            return Response.of(goodsService.deleteGoodsById(goodsId));
-        } catch (HttpException e) {
-            response.setStatus(e.getStatusCode());
-            return Response.of(e.getMessage(), null);
-        }
+        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        return Response.of(goodsService.deleteGoodsById(goodsId));
     }
 }

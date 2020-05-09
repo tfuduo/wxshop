@@ -1,6 +1,5 @@
 package com.dahuntun.wxshop.controller;
 
-import com.dahuntun.wxshop.entity.HttpException;
 import com.dahuntun.wxshop.entity.PageResponse;
 import com.dahuntun.wxshop.entity.Response;
 import com.dahuntun.wxshop.generate.Shop;
@@ -175,24 +174,16 @@ public class ShopController {
      */
     /**
      * 更新店铺的信息
-     * @param id
-     * @param shop
-     * @param response
+     * @param id 店铺id
+     * @param shop 店铺
      * @return 更新后的店铺
      */
     // @formatter:on
     @PatchMapping("/shop/{id}")
     public Response<Shop> updateShop(@PathVariable("id") Long id,
-                                     @RequestBody Shop shop,
-                                     HttpServletResponse response) {
+                                     @RequestBody Shop shop) {
         shop.setId(id);
-        try {
-            return Response.of(shopService.updateShop(shop, UserContext.getCurrentUser().getId()));
-        } catch (HttpException e) {
-            response.setStatus(e.getStatusCode());
-            return Response.of(e.getMessage(), null);
-        }
-
+        return Response.of(shopService.updateShop(shop, UserContext.getCurrentUser().getId()));
     }
 
     // @formatter:off
@@ -234,19 +225,11 @@ public class ShopController {
 
     /**
      * 删除店铺
-     * @param shopId
-     * @param response
+     * @param shopId 店铺id
      * @return 刚刚删除的店铺
      */
     @DeleteMapping("/shop/{id}")
-    public Response<Shop> deleteShop(@PathVariable("id") Long shopId,
-                                     HttpServletResponse response) {
-        try {
+    public Response<Shop> deleteShop(@PathVariable("id") Long shopId) {
             return Response.of(shopService.deleteShopById(shopId, UserContext.getCurrentUser().getId()));
-        } catch (HttpException e) {
-            response.setStatus(e.getStatusCode());
-            return Response.of(e.getMessage(), null);
-        }
-
     }
 }
