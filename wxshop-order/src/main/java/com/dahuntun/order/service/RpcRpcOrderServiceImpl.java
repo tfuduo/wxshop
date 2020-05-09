@@ -14,11 +14,15 @@ import java.util.function.BooleanSupplier;
 
 @Service(version = "${wxshop.rpcorderservice.version}")
 public class RpcRpcOrderServiceImpl implements RpcOrderService {
-    @Autowired
     private OrderMapper orderMapper;
 
-    @Autowired
     private MyOrderMapper myOrderMapper;
+
+    @Autowired
+    public RpcRpcOrderServiceImpl(OrderMapper orderMapper, MyOrderMapper myOrderMapper) {
+        this.orderMapper = orderMapper;
+        this.myOrderMapper = myOrderMapper;
+    }
 
     @Override
     public Order createOrder(OrderInfo orderInfo, Order order) {

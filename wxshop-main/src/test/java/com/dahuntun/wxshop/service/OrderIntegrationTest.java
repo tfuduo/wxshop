@@ -41,6 +41,15 @@ public class OrderIntegrationTest extends AbstractIntegrationTest{
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(mockRpcOrderService);
+
+        when(mockRpcOrderService.rpcOrderService.createOrder(any(), any())).thenAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Order order = invocation.getArgument(1);
+                order.setId(1234L);
+                return order;
+            }
+        });
     }
 
     @Test
@@ -53,21 +62,14 @@ public class OrderIntegrationTest extends AbstractIntegrationTest{
         GoodsInfo goodsInfo2 = new GoodsInfo();
 
         goodsInfo1.setId(4);
-        goodsInfo1.setNumber(2);
+        goodsInfo1.setNumber(3);
         goodsInfo2.setId(5);
-        goodsInfo2.setNumber(1);
+        goodsInfo2.setNumber(5);
 
         orderInfo.setGoods(Arrays.asList(goodsInfo1, goodsInfo2));
 
 
-        when(mockRpcOrderService.createOrder(any(), any())).thenAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Order order = invocation.getArgument(1);
-                order.setId(1234L);
-                return order;
-            }
-        });
+
 
         Response<OrderResponse> response = testHttpRequest("/api/order", "POST", orderInfo, userLoginResponse.cookie)
                 .asJsonObject(new TypeReference<Response<OrderResponse>>() {
@@ -77,14 +79,14 @@ public class OrderIntegrationTest extends AbstractIntegrationTest{
         Assertions.assertEquals(1234L, response.getData().getId());
 
         Assertions.assertEquals(2L, response.getData().getShop().getId());
-        Assertions.assertEquals(2L, response.getData().getShopId());
+
         Assertions.assertEquals("shop2", response.getData().getShop().getName());
         Assertions.assertEquals(DataStatus.PENDING.getName(), response.getData().getStatus());
         Assertions.assertEquals("火星", response.getData().getAddress());
         Assertions.assertEquals(Arrays.asList(4L, 5L),
                 response.getData().getGoods().stream().map(Goods::getId).collect(Collectors.toList())
         );
-        Assertions.assertEquals(Arrays.asList(2, 1),
+        Assertions.assertEquals(Arrays.asList(3, 5),
                 response.getData().getGoods().stream().map(GoodsWithNumber::getNumber).collect(Collectors.toList())
         );
     }
@@ -104,7 +106,7 @@ public class OrderIntegrationTest extends AbstractIntegrationTest{
 
         orderInfo.setGoods(Arrays.asList(goodsInfo1, goodsInfo2));
 
-        TestHttpResponse response = testHttpRequest("/apiorder", "POST", orderInfo, loginResponse.cookie);
+        TestHttpResponse response = testHttpRequest("/api/order", "POST", orderInfo, loginResponse.cookie);
         Assertions.assertEquals(HttpServletResponse.SC_GONE, response.code);
 
         // 确保扣库存成功的回滚了

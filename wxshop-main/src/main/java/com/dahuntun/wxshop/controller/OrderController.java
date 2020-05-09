@@ -181,6 +181,7 @@ public class OrderController {
     @PostMapping("/order")
     public Response<OrderResponse> createOrder(@RequestBody OrderInfo orderInfo, HttpServletResponse response) {
         try {
+            orderService.deductStock(orderInfo);
             return Response.of(orderService.createOrder(orderInfo, UserContext.getCurrentUser().getId()));
         } catch (HttpException e) {
             response.setStatus(e.getStatusCode());

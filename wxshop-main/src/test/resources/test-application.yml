@@ -15,14 +15,14 @@ wxshop:
     port: 6380
   rpcorderservice:
     version: 0.0.1
-    url: dubbo://127.0.0.1:2181
-
+    url: dubbo://127.0.0.1:12346
 dubbo:
   protocol:
     name: dubbo
-    port: 2181
+    port: 12346
   scan:
-    base-packages: com.hcsp.wxshop.mock
+    base-packages: com.dahuntun.wxshop.mock
   registry:
     address: N/A
+
 
